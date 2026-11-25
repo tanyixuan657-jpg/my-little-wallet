@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f7f0e5"><title>My Little Wallet ♡</title>
+<style>
+:root{--bg:#f7f1e8;--paper:#fffdf8;--ink:#665544;--muted:#a49380;--line:#eee4d7;--accent:#b99a78;--green:#6f8c70;--red:#b77d6d;--soft:#f0e5d6}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+.app{max-width:760px;margin:auto;min-height:100vh;padding:22px 17px 95px}
+header{display:flex;align-items:center;justify-content:space-between;margin:5px 2px 20px}.brand{font-family:Georgia,serif;font-size:25px;font-weight:bold}.sub{font-size:11px;color:var(--muted);margin-top:4px}.lang{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:20px;padding:8px 12px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:23px;padding:18px;margin:13px 0;box-shadow:0 5px 18px #806c4c0b}
+.balance{background:#eee1d0;border:0}.eyebrow{font-size:12px;color:#8b765f}.big{font-size:32px;font-weight:700;margin:8px 0 17px;letter-spacing:-.5px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{border-top:1px solid #d9c9b5;padding-top:11px}.stat small{display:block;color:#84715d;margin-bottom:5px}.stat b{font-size:18px}.green{color:var(--green)}.red{color:var(--red)}
+h2{font-size:17px;margin:4px 0 13px}.muted{color:var(--muted);font-size:12px}
+.actions{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.action{border:0;border-radius:17px;background:#f5ede2;padding:15px 7px;color:var(--ink);font-weight:600}.action span{display:block;font-size:22px;margin-bottom:6px}
+.row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--line)}.row:last-child{border:0}.bubble{width:40px;height:40px;border-radius:14px;background:#f3eadf;display:grid;place-items:center;font-size:19px}.grow{flex:1}.row strong{font-size:14px}.row small{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+button,input,select{font:inherit}button{cursor:pointer}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fffdf8ed;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;gap:clamp(12px,6vw,45px);padding:10px 8px calc(10px + env(safe-area-inset-bottom));z-index:5}
+nav button{border:0;background:none;color:var(--muted);font-size:11px;min-width:54px}nav button span{display:block;font-size:20px;margin-bottom:3px}nav button.active{color:var(--accent);font-weight:700}
+.panel{display:none}.panel.active{display:block}
+.field{margin:12px 0}.field label{display:block;font-size:12px;color:#88745f;margin-bottom:6px}.field input,.field select{width:100%;border:1px solid var(--line);background:#fffefa;border-radius:13px;padding:12px;color:var(--ink);outline:none}
+.segment{display:flex;background:#f4ede3;padding:4px;border-radius:14px}.segment button{flex:1;border:0;border-radius:11px;padding:10px;background:transparent;color:var(--muted)}.segment button.on{background:var(--paper);color:var(--ink);box-shadow:0 2px 8px #0000000a}
+.primary{width:100%;border:0;background:#b99a78;color:white;padding:13px;border-radius:15px;font-weight:700;margin-top:7px}
+.empty{text-align:center;padding:25px;color:var(--muted)}.goalbar{height:9px;border-radius:9px;background:#eee5da;overflow:hidden;margin:12px 0}.goalbar i{display:block;height:100%;background:#b99a78;width:0}
+.hidden{display:none!important}.hint{background:#f6efe5;border-radius:13px;padding:11px;font-size:12px;color:#89745e;line-height:1.5}
+@media(min-width:600px){.app{padding:30px 28px 100px}.two{display:grid;grid-template-columns:1fr 1fr;gap:13px}.two .card{margin:0}.balance{margin-bottom:15px}}
+</style></head>
+<body><main class="app">
+<header><div><div class="brand">My Little Wallet ♡</div><div class="sub" id="tagline">a little wallet for your little life</div></div><button class="lang" id="langBtn">EN / 中文</button></header>
+<section id="home" class="panel active">
+ <div class="card balance"><div class="eyebrow" data-i="balance">我的钱包余额 · TOTAL BALANCE</div><div class="big" id="balance">RM 0.00</div><div class="stats"><div class="stat"><small data-i="income">总收入 · INCOME</small><b class="green" id="income">RM 0.00</b></div><div class="stat"><small data-i="expense">总支出 · EXPENSE</small><b class="red" id="expense">RM 0.00</b></div></div></div>
+ <div class="card"><h2 data-i="quick">快速开始 · QUICK ACCESS</h2><div class="actions"><button class="action" onclick="openAdd('income')"><span>🌷</span><i data-i="addIncome">新增收入</i></button><button class="action" onclick="openAdd('expense')"><span>🧁</span><i data-i="addExpense">新增支出</i></button><button class="action" onclick="showTab('stats')"><span>📊</span><i data-i="viewStats">查看统计</i></button></div></div>
+ <div class="card"><h2 data-i="recent">最近记录 · RECENT</h2><div id="recentList"></div></div>
+</section>
+<section id="add" class="panel"><div class="card"><h2 data-i="newRecord">新增一笔记录</h2><div class="segment"><button id="incomeBtn" onclick="setType('income')" data-i="incomeTab">收入 +</button><button id="expenseBtn" class="on" onclick="setType('expense')" data-i="expenseTab">支出 −</button></div>
+ <div class="field"><label data-i="amount">金额（RM）</label><input id="amountInput" type="number" min="0.01" step="0.01" placeholder="0.00"></div>
+ <div class="field"><label data-i="category">分类</label><select id="categoryInput"></select></div>
+ <div class="field"><label data-i="date">日期</label><input id="dateInput" type="date"></div>
+ <div class="field"><label data-i="note">备注（选填）</label><input id="noteInput" placeholder="例如：午餐 / Lunch"></div>
+ <button class="primary" onclick="saveRecord()" data-i="save">保存记录 ♡</button></div></section>
+<section id="stats" class="panel"><div class="card"><h2 data-i="monthly">本月概览 · THIS MONTH</h2><div class="stats"><div class="stat"><small data-i="income">总收入</small><b class="green" id="monthIncome">RM 0.00</b></div><div class="stat"><small data-i="expense">总支出</small><b class="red" id="monthExpense">RM 0.00</b></div></div></div><div class="card"><h2 data-i="byCategory">支出分类</h2><div id="categoryStats" class="empty">还没有记录 ♡</div></div></section>
+<section id="savings" class="panel">
+ <div class="card">
+  <h2 data-i="savingTitle">我的储蓄目标 · SAVINGS GOALS</h2>
+  <div class="field"><label data-i="goalName">目标名称</label><input id="goalName" placeholder="例如：Japan Trip"></div>
+  <div class="field"><label data-i="goalAmount">目标金额（RM）</label><input id="goalAmount" type="number" min="1" step="0.01" placeholder="3000"></div>
+  <div class="field"><label data-i="savedAmount">目前已存（RM）</label><input id="savedAmount" type="number" min="0" step="0.01" placeholder="0"></div>
+  <button class="primary" onclick="saveGoal()" data-i="saveGoal">＋ 新增储蓄目标</button>
+ </div>
+ <div class="card"><h2 data-i="myGoals">我的目标</h2><div id="goalList" class="empty">还没有设定目标 ♡</div></div>
+</section>
+<section id="settings" class="panel"><div class="card"><h2 data-i="settingsTitle">设置 · SETTINGS</h2><div id="cloudStatus" class="hint">尚未登录：目前记录只保存在这台设备。登录后可同步到云端。</div><div class="field"><label data-i="account">账号登录</label><input id="authEmail" type="email" autocomplete="email" placeholder="Email" style="width:100%;border:1px solid var(--line);background:#fffefa;border-radius:13px;padding:12px;margin-bottom:9px;color:var(--ink)"><input id="authPassword" type="password" autocomplete="current-password" placeholder="Password（至少 6 位）" style="width:100%;border:1px solid var(--line);background:#fffefa;border-radius:13px;padding:12px;color:var(--ink)"><button class="primary" onclick="emailSignIn()" data-i="emailLogin">Email 登录</button><button class="primary" style="background:#8f806d" onclick="emailSignUp()" data-i="emailRegister">注册新账号</button><button class="primary" style="background:#6f8190" onclick="googleSignIn()" data-i="googleLogin">使用 Google 登录</button><button class="primary hidden" style="background:#c18a7b" id="signOutBtn" onclick="signOutUser()" data-i="signOut">退出登录</button></div><div class="hint" data-i="cloudHint">登录后，记账记录和多个储蓄目标会保存到 Firebase。请只在自己的账号中记录个人资料。</div><button class="primary" style="background:#c18a7b" onclick="exportCSV()" data-i="export">导出 CSV 账目</button><button class="primary" style="background:#8f806d" onclick="clearAll()" data-i="clear">清空本机演示数据</button></div></section>
+</main>
+<nav><button class="active" onclick="showTab('home')"><span>⌂</span><i data-i="home">首页</i></button><button onclick="showTab('add')"><span>＋</span><i data-i="records">记账</i></button><button onclick="showTab('stats')"><span>◔</span><i data-i="stats">统计</i></button><button onclick="showTab('savings')"><span>♡</span><i data-i="savings">储蓄</i></button><button onclick="showTab('settings')"><span>⚙</span><i data-i="settings">设置</i></button></nav>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider, signInWithRedirect, signOut } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-auth.js";
+import { getFirestore, collection, doc, getDocs, setDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/13.4.0/firebase-firestore.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyBf1sCZr6yTX6z9xnhhoKMsGOHt2d8RUUc",
+  authDomain: "my-little-wallet-df491.firebaseapp.com",
+  projectId: "my-little-wallet-df491",
+  storageBucket: "my-little-wallet-df491.firebasestorage.app",
+  messagingSenderId: "152729873275",
+  appId: "1:152729873275:web:6f9ff8879cdc11f5856bde"
+};
+const app=initializeApp(firebaseConfig), auth=getAuth(app), db=getFirestore(app);
+const userPath=()=>{if(!auth.currentUser)throw new Error('请先登录');return auth.currentUser.uid};
+const txCol=()=>collection(db,'users',userPath(),'transactions');
+const api={
+ signInEmail:(email,password)=>{if(!email||!password)throw new Error('请输入 Email 和密码');return signInWithEmailAndPassword(auth,email,password)},
+ signUpEmail:(email,password)=>{if(!email||!password)throw new Error('请输入 Email 和密码');if(password.length<6)throw new Error('密码至少需要 6 位');return createUserWithEmailAndPassword(auth,email,password)},
+ signInGoogle:()=>signInWithRedirect(auth,new GoogleAuthProvider()),
+ signOut:()=>signOut(auth),
+ loadUserData:async()=>{const uid=userPath();const snap=await getDocs(collection(db,'users',uid,'transactions'));let cloudRecords=snap.docs.map(d=>({...d.data(),id:d.id}));const goalsSnap=await getDocs(collection(db,'users',uid,'savingsGoals'));let cloudGoals=goalsSnap.docs.map(d=>({...d.data(),id:d.id}));const legacySnap=await getDoc(doc(db,'users',uid,'settings','main'));const legacyGoal=legacySnap.exists()?legacySnap.data().goal:null;const localRecords=JSON.parse(localStorage.getItem('mlw_records')||'[]');const localGoal=JSON.parse(localStorage.getItem('mlw_goal')||'null');if(cloudRecords.length===0&&localRecords.length){for(const r of localRecords){await setDoc(doc(db,'users',uid,'transactions',String(r.id)),r)}cloudRecords=localRecords;}if(cloudGoals.length===0&&legacyGoal){const migrated={...legacyGoal,id:String(Date.now())};await setDoc(doc(db,'users',uid,'savingsGoals',migrated.id),migrated);cloudGoals=[migrated];}else if(cloudGoals.length===0&&localGoal){const migrated={...localGoal,id:String(Date.now())};await setDoc(doc(db,'users',uid,'savingsGoals',migrated.id),migrated);cloudGoals=[migrated];}return {records:cloudRecords.sort((a,b)=>String(b.date).localeCompare(String(a.date))),goals:cloudGoals};},
+ saveAllRecords:async(list)=>{const uid=userPath();for(const r of list){await setDoc(doc(db,'users',uid,'transactions',String(r.id)),r)}},
+ deleteRecord:async(id)=>deleteDoc(doc(db,'users',userPath(),'transactions',String(id))),
+ saveGoal:async(goal)=>{const uid=userPath();return setDoc(doc(db,'users',uid,'savingsGoals',String(goal.id)),goal)},
+ deleteGoal:async(id)=>deleteDoc(doc(db,'users',userPath(),'savingsGoals',String(id)))
+};
+window.firebaseAPI=api;
+onAuthStateChanged(auth,user=>{if(window.onCloudAuthChanged)window.onCloudAuthChanged(user);});
+</script>
+<script>
+const words={
+zh:{balance:'我的钱包余额 · TOTAL BALANCE',income:'总收入 · INCOME',expense:'总支出 · EXPENSE',quick:'快速开始 · QUICK ACCESS',addIncome:'新增收入',addExpense:'新增支出',viewStats:'查看统计',recent:'最近记录 · RECENT',newRecord:'新增一笔记录',incomeTab:'收入 +',expenseTab:'支出 −',amount:'金额（RM）',category:'分类',date:'日期',note:'备注（选填）',save:'保存记录 ♡',monthly:'本月概览 · THIS MONTH',byCategory:'支出分类',savingTitle:'我的储蓄目标 · SAVINGS GOALS',myGoals:'我的目标',goalName:'目标名称',goalAmount:'目标金额（RM）',savedAmount:'目前已存（RM）',saveGoal:'＋ 新增储蓄目标',settingsTitle:'设置 · SETTINGS',localHint:'目前记录只保存在这台设备。登录后可同步到云端。',account:'账号登录',emailLogin:'Email 登录',emailRegister:'注册新账号',googleLogin:'使用 Google 登录',signOut:'退出登录',cloudHint:'登录后，记账记录和储蓄目标会保存到 Firebase。',export:'导出 CSV 账目',clear:'清空本机演示数据',home:'首页',records:'记账',stats:'统计',savings:'储蓄',settings:'设置',empty:'还没有记录 ♡',saved:'记录已保存 ♡',invalid:'请输入大于 0 的金额',goalSaved:'储蓄目标已保存 ♡',noGoal:'还没有设定目标 ♡',progress:'已完成',delete:'删除'},
+en:{balance:'MY BALANCE',income:'INCOME',expense:'EXPENSE',quick:'QUICK ACCESS',addIncome:'Add income',addExpense:'Add expense',viewStats:'Statistics',recent:'RECENT TRANSACTIONS',newRecord:'New transaction',incomeTab:'Income +',expenseTab:'Expense −',amount:'Amount (RM)',category:'Category',date:'Date',note:'Note (optional)',save:'Save transaction ♡',monthly:'THIS MONTH',byCategory:'EXPENSE BY CATEGORY',savingTitle:'MY SAVINGS GOALS',myGoals:'MY GOALS',goalName:'Goal name',goalAmount:'Target amount (RM)',savedAmount:'Amount saved (RM)',saveGoal:'＋ Add savings goal',settingsTitle:'SETTINGS',localHint:'Records are currently stored on this device. Sign in to sync to the cloud.',account:'Account sign-in',emailLogin:'Sign in with Email',emailRegister:'Create account',googleLogin:'Continue with Google',signOut:'Sign out',cloudHint:'After signing in, transactions and multiple savings goals are saved to Firebase.',export:'Export transactions as CSV',clear:'Clear local demo data',home:'Home',records:'Record',stats:'Stats',savings:'Savings',settings:'Settings',empty:'No transactions yet ♡',saved:'Transaction saved ♡',invalid:'Please enter an amount above 0',goalSaved:'Savings goal saved ♡',noGoal:'No goal set yet ♡',progress:'completed',delete:'Delete'}
+};
+let lang='zh',type='expense',records=JSON.parse(localStorage.getItem('mlw_records')||'[]'),goals=[];
+let cloudUser=null;
+function setCloudStatus(message){document.getElementById('cloudStatus').textContent=message;}
+window.onCloudAuthChanged=async(user)=>{cloudUser=user||null;const out=document.getElementById('signOutBtn');out.classList.toggle('hidden',!user);if(!user){setCloudStatus('尚未登录：目前记录只保存在这台设备。');return;}setCloudStatus('已登录：正在读取云端资料…');try{const data=await window.firebaseAPI.loadUserData();records=data.records;goals=data.goals||[];localStorage.setItem('mlw_records',JSON.stringify(records));render();setCloudStatus('已登录 '+(user.email||'Google 用户')+' · 云端同步已连接 ♡');}catch(e){console.error(e);setCloudStatus('云端读取失败：'+(e.message||e));}};
+window.onCloudError=(message)=>setCloudStatus('登录/同步提示：'+message);
+const cats={income:{zh:['兼职收入','Affiliate 佣金','礼物','其他收入'],en:['Part-time job','Affiliate commission','Gift','Other income']},expense:{zh:['餐饮','购物','交通','美容护理','宠物','学习','娱乐','账单','其他支出'],en:['Food','Shopping','Transport','Beauty','Pet','Study','Entertainment','Bills','Other expense']}};
+function t(k){return words[lang][k]||k}function fmt(n){return 'RM '+Number(n||0).toFixed(2)}
+async function persist(){localStorage.setItem('mlw_records',JSON.stringify(records));render();if(cloudUser&&window.firebaseAPI){try{await window.firebaseAPI.saveAllRecords(records);}catch(e){alert('云端保存失败：'+e.message)}}}
+function showTab(id){document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id===id));document.querySelectorAll('nav button').forEach((x,i)=>x.classList.toggle('active',['home','add','stats','savings','settings'][i]===id))}
+function openAdd(v){setType(v);showTab('add')}function setType(v){type=v;document.getElementById('incomeBtn').classList.toggle('on',v==='income');document.getElementById('expenseBtn').classList.toggle('on',v==='expense');let old=document.getElementById('categoryInput').value;document.getElementById('categoryInput').innerHTML=cats[v][lang].map(x=>`<option>${x}</option>`).join('')}
+async function saveRecord(){let a=Number(document.getElementById('amountInput').value);if(!a||a<=0){alert(t('invalid'));return}records.unshift({id:Date.now(),type,amount:a,category:document.getElementById('categoryInput').value,date:document.getElementById('dateInput').value||new Date().toISOString().slice(0,10),note:document.getElementById('noteInput').value});await persist();document.getElementById('amountInput').value='';document.getElementById('noteInput').value='';showTab('home');alert(t('saved'))}
+function render(){let inc=records.filter(x=>x.type==='income').reduce((s,x)=>s+x.amount,0),exp=records.filter(x=>x.type==='expense').reduce((s,x)=>s+x.amount,0);document.getElementById('balance').textContent=fmt(inc-exp);document.getElementById('income').textContent=fmt(inc);document.getElementById('expense').textContent=fmt(exp);
+let list=records.slice(0,8);document.getElementById('recentList').innerHTML=list.length?list.map(x=>`<div class="row"><div class="bubble">${x.type==='income'?'🌷':'🧁'}</div><div class="grow"><strong>${esc(x.category)}</strong><small>${esc(x.note||x.category)} · ${x.date}</small></div><strong class="${x.type==='income'?'green':'red'}">${x.type==='income'?'+':'−'}${fmt(x.amount)}</strong><button aria-label="delete" onclick="del(${x.id})" style="border:0;background:none;color:#b6a694">×</button></div>`).join(''):`<div class="empty">${t('empty')}</div>`;
+let now=new Date(),m=now.toISOString().slice(0,7),mr=records.filter(x=>x.date.startsWith(m));document.getElementById('monthIncome').textContent=fmt(mr.filter(x=>x.type==='income').reduce((s,x)=>s+x.amount,0));document.getElementById('monthExpense').textContent=fmt(mr.filter(x=>x.type==='expense').reduce((s,x)=>s+x.amount,0));
+let totals={};records.filter(x=>x.type==='expense').forEach(x=>totals[x.category]=(totals[x.category]||0)+x.amount);let arr=Object.entries(totals).sort((a,b)=>b[1]-a[1]);document.getElementById('categoryStats').innerHTML=arr.length?arr.map(([c,v])=>`<div class="row"><div class="grow"><strong>${esc(c)}</strong></div><strong>${fmt(v)}</strong></div>`).join(''):`<div class="empty">${t('empty')}</div>`;
+renderGoal()}
+async function del(id){if(confirm('Delete this transaction?')){records=records.filter(x=>String(x.id)!==String(id));await persist();if(cloudUser&&window.firebaseAPI){try{await window.firebaseAPI.deleteRecord(String(id))}catch(e){alert('云端删除失败：'+e.message)}}}}function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function saveGoal(){if(!cloudUser){alert('请先登录账号，再保存储蓄目标，才能同步到 Firebase。');return}const name=document.getElementById('goalName').value.trim();const target=Number(document.getElementById('goalAmount').value);const saved=Number(document.getElementById('savedAmount').value)||0;if(!name){alert('请填写目标名称');return}if(!target||target<=0||saved<0){alert('请填写正确的金额');return}const item={id:String(Date.now()),name,target,saved,createdAt:new Date().toISOString()};goals.unshift(item);if(cloudUser&&window.firebaseAPI){try{await window.firebaseAPI.saveGoal(item)}catch(e){goals=goals.filter(g=>g.id!==item.id);alert('云端保存失败：'+e.message);return}}document.getElementById('goalName').value='';document.getElementById('goalAmount').value='';document.getElementById('savedAmount').value='';renderGoal();alert('储蓄目标已保存 ♡')}
+async function changeGoalAmount(id,delta){const item=goals.find(g=>String(g.id)===String(id));if(!item)return;const amount=Number(prompt(delta>=0?'请输入要存入的金额（RM）':'请输入要提取的金额（RM）',''));if(!Number.isFinite(amount)||amount<=0)return;const next=item.saved+delta*amount;if(next<0){alert('提取金额不能超过目前已存金额');return}const updated={...item,saved:next};if(cloudUser&&window.firebaseAPI){try{await window.firebaseAPI.saveGoal(updated)}catch(e){alert('云端更新失败：'+e.message);return}}goals=goals.map(g=>String(g.id)===String(id)?updated:g);renderGoal()}
+async function removeGoal(id){if(!confirm('确定删除这个储蓄目标吗？'))return;if(cloudUser&&window.firebaseAPI){try{await window.firebaseAPI.deleteGoal(id)}catch(e){alert('云端删除失败：'+e.message);return}}goals=goals.filter(g=>String(g.id)!==String(id));renderGoal()}
+function renderGoal(){const el=document.getElementById('goalList');if(!goals.length){el.innerHTML='<div class="empty">还没有设定目标 ♡</div>';return}el.innerHTML=goals.map(g=>{const p=Math.max(0,Math.min(100,g.target?g.saved/g.target*100:0));const left=Math.max(0,g.target-g.saved);return `<div class="card" style="margin:12px 0;background:#fffaf3"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>${esc(g.name)}</b><span class="muted">${p.toFixed(0)}%</span></div><p style="margin:10px 0 4px">${fmt(g.saved)} / ${fmt(g.target)}</p><div class="goalbar"><i style="width:${p}%"></i></div><div class="muted">还差 ${fmt(left)} · ${p.toFixed(0)}% ${t('progress')}</div><div style="display:flex;gap:8px;margin-top:12px"><button class="primary" style="margin:0;flex:1" onclick="changeGoalAmount('${g.id}',1)">＋ 存入</button><button class="primary" style="margin:0;flex:1;background:#8f806d" onclick="changeGoalAmount('${g.id}',-1)">− 提取</button><button onclick="removeGoal('${g.id}')" style="border:1px solid var(--line);background:#fff;border-radius:12px;padding:0 12px;color:#b77d6d">删除</button></div></div>`}).join('')}
+async function emailSignIn(){try{await window.firebaseAPI.signInEmail(document.getElementById('authEmail').value.trim(),document.getElementById('authPassword').value); }catch(e){alert('登录失败：'+e.message)}}
+async function emailSignUp(){try{await window.firebaseAPI.signUpEmail(document.getElementById('authEmail').value.trim(),document.getElementById('authPassword').value); }catch(e){alert('注册失败：'+e.message)}}
+async function googleSignIn(){try{await window.firebaseAPI.signInGoogle();}catch(e){alert('Google 登录失败：'+e.message)}}
+async function signOutUser(){try{await window.firebaseAPI.signOut();records=[];goals=[];render();setCloudStatus('已退出登录。');}catch(e){alert('退出失败：'+e.message)}}
+function exportCSV(){let rows=[['type','amount_MYR','category','date','note'],...records.map(x=>[x.type,x.amount,x.category,x.date,x.note||''])];let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));a.download='my-little-wallet.csv';a.click();URL.revokeObjectURL(a.href)}
+function clearAll(){if(confirm('Clear all local demo data?')){records=[];goals=[];localStorage.removeItem('mlw_records');localStorage.removeItem('mlw_goal');render()}}
+function setLang(){document.querySelectorAll('[data-i]').forEach(el=>el.textContent=t(el.dataset.i));document.getElementById('langBtn').textContent=lang==='zh'?'中文 / EN':'EN / 中文';setType(type);render()}
+document.getElementById('langBtn').onclick=()=>{lang=lang==='zh'?'en':'zh';setLang()};
+document.getElementById('dateInput').value=new Date().toISOString().slice(0,10);setType('expense');render();setLang();
+</script></body></html>
